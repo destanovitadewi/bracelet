@@ -3,15 +3,15 @@ import { db } from "@/lib/firebase-admin";
 import { compare } from "bcryptjs";
 
 export async function POST(req) {
-  const { username, password } = await req.json();
-
-  if (!username || !password) {
-    return new Response(JSON.stringify({ message: "Data tidak lengkap" }), {
-      status: 400,
-    });
-  }
-
   try {
+    const { username, password } = await req.json();
+
+    if (!username || !password) {
+      return new Response(JSON.stringify({ message: "Data tidak lengkap" }), {
+        status: 400,
+      });
+    }
+
     const snapshot = await db
       .collection("users")
       .where("username", "==", username)
@@ -45,8 +45,8 @@ export async function POST(req) {
       }),
       { status: 200 }
     );
-  } catch (err) {
-    console.error("Login error:", err);
+  } catch (error) {
+    console.error("Login Error:", error);
     return new Response(
       JSON.stringify({ message: "Terjadi kesalahan server" }),
       { status: 500 }
