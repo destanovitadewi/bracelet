@@ -4,17 +4,21 @@ import { compare } from "bcryptjs";
 
 export async function POST(req) {
   try {
-    const { username, password } = await req.json();
+    const body = await req.json();
+    const { username, password } = body;
 
+    // Validasi input
     if (!username || !password) {
       return new Response(JSON.stringify({ message: "Data tidak lengkap" }), {
         status: 400,
       });
     }
 
+    // Cari user berdasarkan username
     const snapshot = await db
       .collection("users")
       .where("username", "==", username)
+      .limit(1) // Efisiensi query
       .get();
 
     if (snapshot.empty) {
@@ -26,6 +30,7 @@ export async function POST(req) {
     const userDoc = snapshot.docs[0];
     const userData = userDoc.data();
 
+    // Bandingkan password hash
     const isMatch = await compare(password, userData.password);
 
     if (!isMatch) {
@@ -34,6 +39,7 @@ export async function POST(req) {
       });
     }
 
+    // Response sukses
     return new Response(
       JSON.stringify({
         message: "Login berhasil",
@@ -45,8 +51,8 @@ export async function POST(req) {
       }),
       { status: 200 }
     );
-  } catch (error) {
-    console.error("Login Error:", error);
+  } catch (err) {
+    console.error("❌ Login error:", err);
     return new Response(
       JSON.stringify({ message: "Terjadi kesalahan server" }),
       { status: 500 }
